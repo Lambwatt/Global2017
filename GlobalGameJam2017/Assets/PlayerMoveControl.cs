@@ -20,8 +20,10 @@ public class PlayerMoveControl : MonoBehaviour {
 	bool m_touchDetected;
 	bool m_grounded;
 	bool m_damaged;
+	bool m_invulnerable = false;
 	Vector3 m_touchVector;
 	float m_knockbackTimeRemaining = 0;
+	float m_invulnerabilityTimeRemaining = 0;
 	Animator m_animator;
 
 	// Use this for initialization
@@ -41,6 +43,13 @@ public class PlayerMoveControl : MonoBehaviour {
 
 		if(checkForWalls()){
 			m_walkDirection = -m_walkDirection;
+		}
+
+		if(m_invulnerable){
+			m_invulnerabilityTimeRemaining -= Time.deltaTime;
+			if(m_invulnerabilityTimeRemaining <= 0){
+				m_invulnerable = false;
+			}
 		}
 
 		if(m_damaged){
@@ -86,31 +95,25 @@ public class PlayerMoveControl : MonoBehaviour {
 		return groundCheck != null && groundCheck.tag == "Platform";
 	}
 
-	void OnCollisionEnter2D(Collision2D col){
-		
-		if(col.collider.tag == "Damaging"){
+	void checkForDamage(Collision2D col){
+		if(col.collider.tag == "Damaging" && m_invulnerable == false){
 			m_animator.SetTrigger("Damaged");
 			m_damaged = true;
 			m_knockbackTimeRemaining = m_knockbackTime;
 			m_rb.velocity = new Vector2((m_damageBounceVelocity * m_walkDirection * (m_grounded ? -1 : 1)), m_damageBounceVelocity);	
+			m_invulnerable = true;
+			m_invulnerabilityTimeRemaining = m_invulnerableTime;
 		}
-//		else if(col.collider.tag == "Platform")
-//		{
-//			m_walkDirection = -m_walkDirection;
-//		}
 	}
 
-//	void OnCollisionStay2D(Collision2D col){
-//
-//		Debug.Log("Velocity: "+m_rb.velocity.x);
-//		if(m_grounded && Mathf.Abs(m_rb.velocity.x) < 0.1f * m_walkSpeed){
-//			m_walkDirection = -m_walkDirection;
-//		}
-//	}
-//		if(col.collider.tag == "Platform")
-//		{
-//			m_rb.velocity.x == 0;
-//			m_walkDirection = -m_walkDirection;
-//		}
-//	}
+	void OnCollisionEnter2D(Collision2D col){
+
+		checkForDamage(col);
+	}
+
+
+	void OnCollisionStay2D(Collision2D col){
+		checkForDamage(col);
+	}
+
 }
