@@ -9,7 +9,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	public Transform m_groundCheck;
 	public float m_width;
 
-	int m_walkDirection = 1;
+	public int m_walkDirection { get; private set; }// = 1;
 	Rigidbody2D m_rb;
 	bool m_touchDetected;
 	bool m_grounded;
@@ -18,6 +18,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		m_rb = GetComponent<Rigidbody2D>();
+		m_walkDirection = 1;
 	}
 	
 	// Update is called once per frame
