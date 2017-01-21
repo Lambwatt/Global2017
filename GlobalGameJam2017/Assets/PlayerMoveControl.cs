@@ -40,6 +40,7 @@ public class PlayerMoveControl : MonoBehaviour {
 //
 //		m_grounded = groundCheck != null && groundCheck.tag == "Platform";
 		m_grounded = checkForGround();
+		Debug.Log("Grounded: "+m_grounded);
 
 		if(checkForWalls()){
 			m_walkDirection = -m_walkDirection;
