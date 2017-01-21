@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerMoveControl : MonoBehaviour {
 
@@ -10,15 +11,18 @@ public class PlayerMoveControl : MonoBehaviour {
 	public Transform m_groundCheck;
 	public Transform m_leftWallCheck;
 	public Transform m_rightWallCheck;
+	//public Transform m_ceilingCheck;
 	public float m_width;
 	public float m_height;
 	public float m_knockbackTime;
 	public float m_invulnerableTime;
+	public Text m_debugText;
 
 	public int m_walkDirection { get; private set; }// = 1;
 	Rigidbody2D m_rb;
 	bool m_touchDetected;
 	bool m_grounded;
+	bool m_cielinged;
 	bool m_damaged;
 	bool m_invulnerable = false;
 	Vector3 m_touchVector;
@@ -26,26 +30,57 @@ public class PlayerMoveControl : MonoBehaviour {
 	float m_invulnerabilityTimeRemaining = 0;
 	Animator m_animator;
 
+	Collider2D m_groundCollider;
+	Collider2D m_leftCollider;
+	Collider2D m_rightCollider;
+
+	List<Collider2D> m_allPlatforms;
+
+	const float ALMOST_NOTHING = 0.0001f;
+
 	// Use this for initialization
 	void Start () {
 		m_rb = GetComponent<Rigidbody2D>();
 		m_animator = GetComponent<Animator>();
 		m_walkDirection = 1;
+
+		Collider2D col = GetComponent<Collider2D>();
+		m_width = col.bounds.extents.x - 10*ALMOST_NOTHING;
+		m_height = col.bounds.extents.y - 0.5f;
+
+		m_groundCollider = m_groundCheck.GetComponent<Collider2D>();
+		m_leftCollider = m_groundCheck.GetComponent<Collider2D>();
+		m_rightCollider = m_groundCheck.GetComponent<Collider2D>();
+
+
+		GameObject[] allPlatforms = GameObject.FindGameObjectsWithTag("Platform");
+
+		m_allPlatforms = new List<Collider2D>();
+		foreach(GameObject p in allPlatforms){
+			m_allPlatforms.Add(p.GetComponent<Collider2D>());
+		}
+
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
+
+		//Physics2D.OverlapArea(new Vector2(1, 0), new Vector2(0, 1));
 
 //		Collider2D groundCheck = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
 //
 //		m_grounded = groundCheck != null && groundCheck.tag == "Platform";
+		bool groundedBefore = m_grounded;
 		m_grounded = checkForGround();
-		Debug.Log("Grounded: "+m_grounded);
 
-		if(checkForWalls()){
-			m_walkDirection = -m_walkDirection;
+		//m_debugText.text = "Grounded: "+m_grounded;
+
+		if(groundedBefore == m_grounded){
+			if(checkForWalls()){
+				m_walkDirection = -m_walkDirection;
+			}
 		}
-
+//
 		if(m_invulnerable){
 			m_invulnerabilityTimeRemaining -= Time.deltaTime;
 			if(m_invulnerabilityTimeRemaining <= 0){
@@ -84,16 +119,59 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	}
 
+//	void OnCollisionExit2D(Collision2D col){
+//		if(checkForWalls()){
+//			m_walkDirection = -m_walkDirection;
+//		}
+//	}
+
+//	bool checkForGround(){
+//		//string allCollidersChecked = "";
+//		foreach(Collider2D c in m_allPlatforms){
+//			//allCollidersChecked+=c.name;
+//			if(m_groundCollider.IsTouching(c)){
+//				//Debug.Log(allCollidersChecked);
+//				return true;
+//			}
+//		}
+//		//Debug.Log(allCollidersChecked);
+//		return false;
+//		//return m_groundCheck.GetComponent<Collider2D>().IsTouching();
+//	}
+
+//	bool checkForWalls(){
+//
+////		foreach(Collider2D c in m_allPlatforms){
+////			if(m_leftCollider.IsTouching(c) || m_rightCollider.IsTouching(c))
+////				return true;
+////		}
+//		return false;
+////		return m_leftWallCheck.GetComponent<Collider2D>().IsTouching()
+////			|| m_rightWallCheck.GetComponent<Collider2D>().IsTouching();
+//	}
+
 	bool checkForWalls(){
-		Collider2D leftCheck = Physics2D.OverlapBox(m_leftWallCheck.position, new Vector2(0.0001f, m_height*2), 0.0f);
-		Collider2D rightCheck = Physics2D.OverlapBox(m_rightWallCheck.position, new Vector2(0.0001f, m_height*2), 0.0f);
+//		Debug.DrawLine(new Vector2(m_leftWallCheck.position.x - ALMOST_NOTHING, m_leftWallCheck.position.y - m_height), new Vector2(m_leftWallCheck.position.x + ALMOST_NOTHING, m_leftWallCheck.position.y + m_height));
+//		Debug.DrawLine(new Vector2(m_rightWallCheck.position.x - ALMOST_NOTHING, m_rightWallCheck.position.y - m_height), new Vector2(m_rightWallCheck.position.x + ALMOST_NOTHING, m_rightWallCheck.position.y + m_height));
+		Collider2D leftCheck = Physics2D.OverlapArea(
+			new Vector2(m_leftWallCheck.position.x - ALMOST_NOTHING, m_leftWallCheck.position.y - m_height), new Vector2(m_leftWallCheck.position.x + ALMOST_NOTHING, m_leftWallCheck.position.y + m_height));
+		Collider2D rightCheck = Physics2D.OverlapArea(
+			new Vector2(m_rightWallCheck.position.x - ALMOST_NOTHING, m_rightWallCheck.position.y - m_height), new Vector2(m_rightWallCheck.position.x + ALMOST_NOTHING, m_rightWallCheck.position.y + m_height));
 		return (leftCheck != null && leftCheck.tag == "Platform") || (rightCheck != null && rightCheck.tag == "Platform") ;
 	}
 
 	bool checkForGround(){
-		Collider2D groundCheck = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
+		m_debugText.text = "started ground check";
+		Collider2D groundCheck = Physics2D.OverlapArea(
+			new Vector2(m_groundCheck.position.x - m_width, m_groundCheck.position.y - 0.0001f), 
+			new Vector2(m_groundCheck.position.x + m_width , m_groundCheck.position.y + 0.0001f));// = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
 
-		return groundCheck != null && groundCheck.tag == "Platform";
+		 //= "groundCheck != null: "+(groundCheck != null)+", groundCheck.tag == \"Platform\":"+(groundCheck.tag == "Platform");
+		if(groundCheck != null){
+			//m_debugText.text = ""+groundCheck.gameObject.tag;
+			return groundCheck.CompareTag("Platform");//groundCheck.tag == "Platform";
+		}
+		return false; 
 	}
 
 	void checkForDamage(Collision2D col){
@@ -115,6 +193,27 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	void OnCollisionStay2D(Collision2D col){
 		checkForDamage(col);
+	}
+
+	public static Collider2D OverlapBox2D_2(Vector2 min, Vector2 max) {
+		Bounds bounds = new Bounds(new Vector3(min.x+(max.x - min.x)/2, min.y+(max.y - min.y)/2), new Vector3(max.x - min.x, max.y - min.y));
+		Vector2 center = bounds.center;
+		Vector2 onePoint = new Vector2(center.x + bounds.size.x / 2, center.y + bounds.size.y / 2);
+		float radius = Vector2.Distance(center, onePoint);
+
+		List<Collider2D> inBox = new List<Collider2D>();
+		Debug.DrawLine(bounds.min, bounds.max);
+		Collider2D[] hitColliders = Physics2D.OverlapCircleAll(center, radius);
+		foreach (Collider2D col in hitColliders) {
+
+			if (bounds.Intersects(col.bounds)) {
+				// Inside box
+				//inBox.Add(col);
+				return col;
+			}
+		}
+
+		return null;
 	}
 
 }
