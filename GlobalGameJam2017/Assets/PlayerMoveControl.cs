@@ -8,7 +8,10 @@ public class PlayerMoveControl : MonoBehaviour {
 	public float m_jumpVelocity;
 	public float m_damageBounceVelocity;
 	public Transform m_groundCheck;
+	public Transform m_leftWallCheck;
+	public Transform m_rightWallCheck;
 	public float m_width;
+	public float m_height;
 	public float m_knockbackTime;
 	public float m_invulnerableTime;
 
@@ -29,10 +32,14 @@ public class PlayerMoveControl : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		Collider2D groundCheck = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
+//		Collider2D groundCheck = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
+//
+//		m_grounded = groundCheck != null && groundCheck.tag == "Platform";
+		m_grounded = checkForGround();
 
-		m_grounded = groundCheck != null && groundCheck.tag == "Platform";
-
+		if(checkForWalls()){
+			m_walkDirection = -m_walkDirection;
+		}
 
 		if(m_damaged){
 			m_knockbackTimeRemaining -= Time.deltaTime;
@@ -65,13 +72,43 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	}
 
+	bool checkForWalls(){
+		Collider2D leftCheck = Physics2D.OverlapBox(m_leftWallCheck.position, new Vector2(0.0001f, m_height*2), 0.0f);
+		Collider2D rightCheck = Physics2D.OverlapBox(m_rightWallCheck.position, new Vector2(0.0001f, m_height*2), 0.0f);
+		return (leftCheck != null && leftCheck.tag == "Platform") || (rightCheck != null && rightCheck.tag == "Platform") ;
+	}
+
+	bool checkForGround(){
+		Collider2D groundCheck = Physics2D.OverlapBox(m_groundCheck.position, new Vector2(m_width*2, 0.0001f), 0.0f);
+
+		return groundCheck != null && groundCheck.tag == "Platform";
+	}
+
 	void OnCollisionEnter2D(Collision2D col){
-		Debug.Log("Hit "+col.collider.tag);
+		
 		if(col.collider.tag == "Damaging"){
-			Debug.Log("Harmed");
+			
 			m_damaged = true;
 			m_knockbackTimeRemaining = m_knockbackTime;
 			m_rb.velocity = new Vector2((m_damageBounceVelocity * m_walkDirection * (m_grounded ? -1 : 1)), m_damageBounceVelocity);	
 		}
+//		else if(col.collider.tag == "Platform")
+//		{
+//			m_walkDirection = -m_walkDirection;
+//		}
 	}
+
+//	void OnCollisionStay2D(Collision2D col){
+//
+//		Debug.Log("Velocity: "+m_rb.velocity.x);
+//		if(m_grounded && Mathf.Abs(m_rb.velocity.x) < 0.1f * m_walkSpeed){
+//			m_walkDirection = -m_walkDirection;
+//		}
+//	}
+//		if(col.collider.tag == "Platform")
+//		{
+//			m_rb.velocity.x == 0;
+//			m_walkDirection = -m_walkDirection;
+//		}
+//	}
 }
