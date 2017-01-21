@@ -98,7 +98,7 @@ public class PlayerMoveControl : MonoBehaviour {
 			m_rb.velocity = new Vector3( m_walkSpeed * m_walkDirection, m_rb.velocity.y);
 
 			if(Input.GetMouseButtonDown(0)){
-
+				//Add processing to react to down press
 					m_touchVector = Input.mousePosition;
 			}
 
