@@ -22,10 +22,12 @@ public class PlayerMoveControl : MonoBehaviour {
 	bool m_damaged;
 	Vector3 m_touchVector;
 	float m_knockbackTimeRemaining = 0;
+	Animator m_animator;
 
 	// Use this for initialization
 	void Start () {
 		m_rb = GetComponent<Rigidbody2D>();
+		m_animator = GetComponent<Animator>();
 		m_walkDirection = 1;
 	}
 	
@@ -87,7 +89,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	void OnCollisionEnter2D(Collision2D col){
 		
 		if(col.collider.tag == "Damaging"){
-			
+			m_animator.SetTrigger("Damaged");
 			m_damaged = true;
 			m_knockbackTimeRemaining = m_knockbackTime;
 			m_rb.velocity = new Vector2((m_damageBounceVelocity * m_walkDirection * (m_grounded ? -1 : 1)), m_damageBounceVelocity);	
