@@ -8,13 +8,17 @@ public class Checkpoint : MonoBehaviour {
 	public Transform m_highWater;
 	public Transform m_lowWater;
 
-	// Use this for initialization
-	void Start () {
-		
+	public void activate(){
+		//change sprite state.
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+//	// Use this for initialization
+//	void Start () {
+//		
+//	}
+//	
+//	// Update is called once per frame
+//	void Update () {
+//		
+//	}
 }
