@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour {
 	public CameraControl m_mainCamera;
 	public PlayerMoveControl m_player;
 	public Vector3 m_checkPoint;
+	public WaveControl m_waveControl;
 
 	// Use this for initialization
 	void Start () {
@@ -26,5 +27,6 @@ public class GameManager : MonoBehaviour {
 	public void respawnPlayer(){
 		PlayerMoveControl p = Instantiate(m_player, m_checkPoint, Quaternion.identity);
 		m_mainCamera.setNewPlayer(p);
+		m_waveControl.setPlayer(p);
 	}
 }

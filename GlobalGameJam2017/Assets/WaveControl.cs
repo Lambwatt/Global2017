@@ -19,6 +19,9 @@ public class WaveControl : MonoBehaviour {
 	public WaveState m_waveState {get; private set;}
 	float m_waveTimeRemaining;
 
+	public void setPlayer(PlayerMoveControl p){
+		m_player = p.transform;
+	}
 
 	// Use this for initialization
 	void Start () {
