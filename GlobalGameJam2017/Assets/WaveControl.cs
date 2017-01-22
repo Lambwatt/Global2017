@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WaveControl : MonoBehaviour {
 
-	enum WaveState{
+	public enum WaveState{
 		Out,
 		Rising,
 		In,
@@ -16,10 +16,8 @@ public class WaveControl : MonoBehaviour {
 	public float m_lowTarget;
 	public float m_waveTime;
 
-	WaveState m_waveState;
+	public WaveState m_waveState {get; private set;}
 	float m_waveTimeRemaining;
-
-
 
 
 	// Use this for initialization

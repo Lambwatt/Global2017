@@ -18,6 +18,11 @@ public class PlayerMoveControl : MonoBehaviour {
 	public float m_invulnerableTime;
 	public Text m_debugText;
 
+	public float m_airGravity;
+	public float m_waterGravity;
+	public float m_risingWaterGravity;
+	public float m_fallingWaterGravity;
+
 	public int m_walkDirection { get; private set; }// = 1;
 	Rigidbody2D m_rb;
 	bool m_touchDetected;
@@ -29,6 +34,8 @@ public class PlayerMoveControl : MonoBehaviour {
 	float m_knockbackTimeRemaining = 0;
 	float m_invulnerabilityTimeRemaining = 0;
 	Animator m_animator;
+	Transform m_waveTransform;
+	WaveControl m_waveControl;
 
 	Collider2D m_groundCollider;
 	Collider2D m_leftCollider;
@@ -43,6 +50,11 @@ public class PlayerMoveControl : MonoBehaviour {
 		m_rb = GetComponent<Rigidbody2D>();
 		m_animator = GetComponent<Animator>();
 		m_walkDirection = 1;
+		m_waveControl = FindObjectOfType<WaveControl>();
+		m_waveTransform = m_waveControl.GetComponent<Transform>();
+		//m_rb.gravityScale = m_airGravity;
+
+
 
 		Collider2D col = GetComponent<Collider2D>();
 		m_width = col.bounds.extents.x - 10*ALMOST_NOTHING;
@@ -64,6 +76,20 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+
+		if(m_waveTransform.position.y > transform.position.y){
+			//Underwater
+			if(m_waveControl.m_waveState == WaveControl.WaveState.Rising){
+				m_rb.gravityScale = m_risingWaterGravity;
+			}else if(m_waveControl.m_waveState == WaveControl.WaveState.Falling){
+				m_rb.gravityScale = m_fallingWaterGravity;
+			}else{
+				m_rb.gravityScale = m_waterGravity;
+			}
+		}else{
+			//in air
+			m_rb.gravityScale = m_airGravity;
+		}
 
 		//Physics2D.OverlapArea(new Vector2(1, 0), new Vector2(0, 1));
 
