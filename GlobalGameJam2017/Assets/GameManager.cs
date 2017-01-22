@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour {
 	public PlayerMoveControl m_player;
 	public Vector3 m_checkPoint;
 	public WaveControl m_waveControl;
+	public HealthDisplay m_healthDisplay;
 
 	int m_checkPointNumber;
 
@@ -34,5 +35,6 @@ public class GameManager : MonoBehaviour {
 		PlayerMoveControl p = Instantiate(m_player, m_checkPoint, Quaternion.identity);
 		m_mainCamera.setNewPlayer(p);
 		m_waveControl.setPlayer(p);
+		m_healthDisplay.setPLayer(p);
 	}
 }

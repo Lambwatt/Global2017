@@ -17,7 +17,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	public float m_knockbackTime;
 	public float m_invulnerableTime;
 	public float m_dyingTime;
-	public Text m_debugText;
+	//public Text m_debugText;
 	public int m_maxHealth;
 
 	public float m_airGravity;
@@ -41,7 +41,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	Transform m_waveTransform;
 	WaveControl m_waveControl;
 	Vector3 m_checkPoint;
-	int m_currentHealth;
+	public int m_currentHealth {get; private set;}
 
 	Collider2D m_groundCollider;
 	Collider2D m_leftCollider;
@@ -55,6 +55,8 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		m_currentHealth = m_maxHealth;
+
 		m_rb = GetComponent<Rigidbody2D>();
 		m_animator = GetComponent<Animator>();
 		m_walkDirection = 1;
@@ -62,7 +64,7 @@ public class PlayerMoveControl : MonoBehaviour {
 		m_waveTransform = m_waveControl.GetComponent<Transform>();
 		m_checkPoint = transform.position;
 		m_gm = FindObjectOfType<GameManager>();
-		m_debugText = FindObjectOfType<Text>();
+		//m_debugText = FindObjectOfType<Text>();
 
 
 
@@ -176,7 +178,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	}
 
 	bool checkForGround(){
-		m_debugText.text = "started ground check";
+		//m_debugText.text = "started ground check";
 		Collider2D groundCheck = Physics2D.OverlapArea(
 			new Vector2(m_groundCheck.position.x - m_width, m_groundCheck.position.y - 0.0001f), 
 			new Vector2(m_groundCheck.position.x + m_width , m_groundCheck.position.y + 0.0001f));
