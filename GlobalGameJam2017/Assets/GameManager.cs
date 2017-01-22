@@ -9,9 +9,11 @@ public class GameManager : MonoBehaviour {
 	public Vector3 m_checkPoint;
 	public WaveControl m_waveControl;
 
+	int m_checkPointNumber;
+
 	// Use this for initialization
 	void Start () {
-		
+		m_checkPointNumber = 0;
 	}
 	
 	// Update is called once per frame
@@ -20,8 +22,12 @@ public class GameManager : MonoBehaviour {
 	}
 
 
-	public void setCheckPoint(Vector3 checkPoint){
-		m_checkPoint = checkPoint;
+	public void setCheckPoint(Checkpoint c){
+		if(c.m_checkPointNumber > m_checkPointNumber){
+			m_checkPoint = c.transform.position;
+			m_waveControl.setWaterMarks(c.m_highWater.transform.position.y, c.m_lowWater.transform.position.y);
+		}
+
 	}
 
 	public void respawnPlayer(){

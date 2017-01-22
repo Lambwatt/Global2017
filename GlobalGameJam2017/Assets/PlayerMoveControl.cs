@@ -282,7 +282,7 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D other){
 		if(other.CompareTag("Starfish")){
-			m_gm.setCheckPoint(other.transform.position);
+			m_gm.setCheckPoint(other.GetComponent<Checkpoint>());
 
 		}
 	}

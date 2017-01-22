@@ -28,6 +28,11 @@ public class WaveControl : MonoBehaviour {
 		m_waveState = WaveState.Out;
 		m_waveTimeRemaining = 0;
 	}
+
+	public void setWaterMarks(float high, float low){
+		m_highTarget = high;
+		m_lowTarget = low;
+	}
 	
 	// Update is called once per frame
 	void Update () {
