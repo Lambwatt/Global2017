@@ -7,8 +7,11 @@ public class Checkpoint : MonoBehaviour {
 	public int m_checkPointNumber;
 	public Transform m_highWater;
 	public Transform m_lowWater;
+	public Sprite activated;
 
-	public void activate(){
+	public void OnTriggerEnter2D(){
+		SpriteRenderer r = GetComponent<SpriteRenderer>();
+		r.sprite = activated;
 		//change sprite state.
 	}
 

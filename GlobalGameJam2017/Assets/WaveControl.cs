@@ -10,7 +10,7 @@ public class WaveControl : MonoBehaviour {
 		In,
 		Falling
 	}
-
+	public const int zVal = -2;
 	public Transform m_player;
 	public float m_highTarget;
 	public float m_lowTarget;
@@ -46,7 +46,7 @@ public class WaveControl : MonoBehaviour {
 			}
 			break;
 		case WaveState.Rising:
-			transform.position = Vector3.Lerp(new Vector3(transform.position.x, m_lowTarget),new Vector3(transform.position.x, m_highTarget), m_waveTimeRemaining/ m_waveTime );
+			transform.position = Vector3.Lerp(new Vector3(transform.position.x, m_lowTarget, zVal),new Vector3(transform.position.x, m_highTarget, zVal), m_waveTimeRemaining/ m_waveTime );
 			if(timeUp()){
 				resetTimer();
 				m_waveState = WaveState.In;
@@ -59,7 +59,7 @@ public class WaveControl : MonoBehaviour {
 			}
 			break;
 		case WaveState.Falling:
-			transform.position = Vector3.Lerp(new Vector3(transform.position.x, m_highTarget),new Vector3(transform.position.x, m_lowTarget), m_waveTimeRemaining/ m_waveTime );
+			transform.position = Vector3.Lerp(new Vector3(transform.position.x, m_highTarget, zVal),new Vector3(transform.position.x, m_lowTarget, zVal), m_waveTimeRemaining/ m_waveTime );
 			if(timeUp()){
 				resetTimer();
 				m_waveState = WaveState.Out;
@@ -68,7 +68,7 @@ public class WaveControl : MonoBehaviour {
 		default:
 			break;
 		}
-		transform.position = new Vector3(m_player.position.x, transform.position.y);
+		transform.position = new Vector3(m_player.position.x, transform.position.y, zVal);
 	}
 
 	void updateTime(){
