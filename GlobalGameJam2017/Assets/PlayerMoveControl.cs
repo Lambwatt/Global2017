@@ -105,6 +105,9 @@ public class PlayerMoveControl : MonoBehaviour {
 			if(checkForWalls()){
 				m_walkDirection = -m_walkDirection;
 			}
+		}else{
+			if(m_grounded)
+				m_animator.SetTrigger("Landed");
 		}
 //
 		if(m_invulnerable){
@@ -138,6 +141,7 @@ public class PlayerMoveControl : MonoBehaviour {
 				}else{
 					if(m_grounded){
 						m_rb.velocity = new Vector3( m_rb.velocity.x, m_jumpVelocity);
+						m_animator.SetTrigger("Jumped");
 					}
 				}
 			}
