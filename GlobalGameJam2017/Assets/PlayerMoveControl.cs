@@ -16,7 +16,9 @@ public class PlayerMoveControl : MonoBehaviour {
 	public float m_height;
 	public float m_knockbackTime;
 	public float m_invulnerableTime;
+	public float m_dyingTime;
 	public Text m_debugText;
+	public int m_maxHealth;
 
 	public float m_airGravity;
 	public float m_waterGravity;
@@ -30,18 +32,24 @@ public class PlayerMoveControl : MonoBehaviour {
 	bool m_cielinged;
 	bool m_damaged;
 	bool m_invulnerable = false;
+	bool m_dying;
 	Vector3 m_touchVector;
 	float m_knockbackTimeRemaining = 0;
 	float m_invulnerabilityTimeRemaining = 0;
+	float m_dyingTimeRemaining = 0;
 	Animator m_animator;
 	Transform m_waveTransform;
 	WaveControl m_waveControl;
+	Vector3 m_checkPoint;
+	int m_currentHealth;
 
 	Collider2D m_groundCollider;
 	Collider2D m_leftCollider;
 	Collider2D m_rightCollider;
 
 	List<Collider2D> m_allPlatforms;
+
+	GameManager m_gm;
 
 	const float ALMOST_NOTHING = 0.0001f;
 
@@ -52,6 +60,9 @@ public class PlayerMoveControl : MonoBehaviour {
 		m_walkDirection = 1;
 		m_waveControl = FindObjectOfType<WaveControl>();
 		m_waveTransform = m_waveControl.GetComponent<Transform>();
+		m_checkPoint = transform.position;
+		m_gm = FindObjectOfType<GameManager>();
+		m_debugText = FindObjectOfType<Text>();
 		//m_rb.gravityScale = m_airGravity;
 
 
@@ -108,8 +119,11 @@ public class PlayerMoveControl : MonoBehaviour {
 		}else{
 			if(m_grounded)
 				m_animator.SetTrigger("Landed");
+			else
+				m_animator.SetTrigger("Jumped");
 		}
 //
+
 		if(m_invulnerable){
 			m_invulnerabilityTimeRemaining -= Time.deltaTime;
 			if(m_invulnerabilityTimeRemaining <= 0){
@@ -117,31 +131,44 @@ public class PlayerMoveControl : MonoBehaviour {
 			}
 		}
 
-		if(m_damaged){
-			m_knockbackTimeRemaining -= Time.deltaTime;
-			if(m_knockbackTimeRemaining <= 0){
-				m_damaged = false;
+
+		if(m_dying){
+
+			m_dyingTimeRemaining -= Time.deltaTime;
+			if(m_dyingTimeRemaining <= 0){
+				m_dying = false;
+				m_gm.respawnPlayer();
+				Destroy(gameObject);
 			}
+
 		}else{
+			
+			if(m_damaged){
+				m_knockbackTimeRemaining -= Time.deltaTime;
+				if(m_knockbackTimeRemaining <= 0){
+					m_damaged = false;
+				}
+			}else{
 
-			m_rb.velocity = new Vector3( m_walkSpeed * m_walkDirection, m_rb.velocity.y);
+				m_rb.velocity = new Vector3( m_walkSpeed * m_walkDirection, m_rb.velocity.y);
 
-			if(Input.GetMouseButtonDown(0)){
-				//Add processing to react to down press
-					m_touchVector = Input.mousePosition;
-			}
+				if(Input.GetMouseButtonDown(0)){
+					//Add processing to react to down press
+						m_touchVector = Input.mousePosition;
+				}
 
-			if(Input.GetMouseButtonUp(0)){
-				
+				if(Input.GetMouseButtonUp(0)){
+					
 
-				Vector3 diff = Input.mousePosition - m_touchVector;
+					Vector3 diff = Input.mousePosition - m_touchVector;
 
-				if(Mathf.Abs(diff.x) > Mathf.Abs(diff.y) && diff.magnitude > 100){
-					m_walkDirection = (int)(diff.x/Mathf.Abs(diff.x));
-				}else{
-					if(m_grounded){
-						m_rb.velocity = new Vector3( m_rb.velocity.x, m_jumpVelocity);
-						m_animator.SetTrigger("Jumped");
+					if(Mathf.Abs(diff.x) > Mathf.Abs(diff.y) && diff.magnitude > 100){
+						m_walkDirection = (int)(diff.x/Mathf.Abs(diff.x));
+					}else{
+						if(m_grounded){
+							m_rb.velocity = new Vector3( m_rb.velocity.x, m_jumpVelocity);
+							//m_animator.SetTrigger("Jumped");
+						}
 					}
 				}
 			}
@@ -206,12 +233,19 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	void checkForDamage(Collision2D col){
 		if(col.collider.tag == "Damaging" && m_invulnerable == false){
-			m_animator.SetTrigger("Damaged");
-			m_damaged = true;
+			m_currentHealth -= 1;
 			m_knockbackTimeRemaining = m_knockbackTime;
-			m_rb.velocity = new Vector2((m_damageBounceVelocity * m_walkDirection * (m_grounded ? -1 : 1)), m_damageBounceVelocity);	
-			m_invulnerable = true;
-			m_invulnerabilityTimeRemaining = m_invulnerableTime;
+			m_rb.velocity = new Vector2((m_damageBounceVelocity * m_walkDirection * (m_grounded ? -1 : 1)), m_damageBounceVelocity);
+			if(m_currentHealth <= 0){
+				die();
+			}
+			else{
+				m_animator.SetTrigger("Damaged");
+				m_damaged = true;
+				m_invulnerable = true;
+				m_invulnerabilityTimeRemaining = m_invulnerableTime;
+
+			}
 		}
 	}
 
@@ -225,25 +259,44 @@ public class PlayerMoveControl : MonoBehaviour {
 		checkForDamage(col);
 	}
 
-	public static Collider2D OverlapBox2D_2(Vector2 min, Vector2 max) {
-		Bounds bounds = new Bounds(new Vector3(min.x+(max.x - min.x)/2, min.y+(max.y - min.y)/2), new Vector3(max.x - min.x, max.y - min.y));
-		Vector2 center = bounds.center;
-		Vector2 onePoint = new Vector2(center.x + bounds.size.x / 2, center.y + bounds.size.y / 2);
-		float radius = Vector2.Distance(center, onePoint);
+//	public static Collider2D OverlapBox2D_2(Vector2 min, Vector2 max) {
+//		Bounds bounds = new Bounds(new Vector3(min.x+(max.x - min.x)/2, min.y+(max.y - min.y)/2), new Vector3(max.x - min.x, max.y - min.y));
+//		Vector2 center = bounds.center;
+//		Vector2 onePoint = new Vector2(center.x + bounds.size.x / 2, center.y + bounds.size.y / 2);
+//		float radius = Vector2.Distance(center, onePoint);
+//
+//		List<Collider2D> inBox = new List<Collider2D>();
+//		Debug.DrawLine(bounds.min, bounds.max);
+//		Collider2D[] hitColliders = Physics2D.OverlapCircleAll(center, radius);
+//		foreach (Collider2D col in hitColliders) {
+//
+//			if (bounds.Intersects(col.bounds)) {
+//				// Inside box
+//				//inBox.Add(col);
+//				return col;
+//			}
+//		}
+//
+//		return null;
+//	}
 
-		List<Collider2D> inBox = new List<Collider2D>();
-		Debug.DrawLine(bounds.min, bounds.max);
-		Collider2D[] hitColliders = Physics2D.OverlapCircleAll(center, radius);
-		foreach (Collider2D col in hitColliders) {
+	void OnTriggerEnter2D(Collider2D other){
+		if(other.CompareTag("Starfish")){
+			m_gm.setCheckPoint(other.transform.position);
 
-			if (bounds.Intersects(col.bounds)) {
-				// Inside box
-				//inBox.Add(col);
-				return col;
-			}
 		}
+	}
 
-		return null;
+	void die(){
+		m_animator.SetTrigger("Dying");
+		m_dying = true;
+		m_dyingTimeRemaining = m_dyingTime;
+	}
+
+	void respawn(){
+		transform.position = m_checkPoint;
+		m_currentHealth = m_maxHealth;
+		m_animator.SetTrigger("Respawn");
 	}
 
 }
