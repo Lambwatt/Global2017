@@ -17,6 +17,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	public float m_knockbackTime;
 	public float m_invulnerableTime;
 	public float m_dyingTime;
+	public float m_swipeTime;
 	//public Text m_debugText;
 	public int m_maxHealth;
 
@@ -27,7 +28,7 @@ public class PlayerMoveControl : MonoBehaviour {
 
 	public int m_walkDirection { get; private set; }// = 1;
 	Rigidbody2D m_rb;
-	bool m_touchDetected;
+	bool m_touchDetected = false;
 	bool m_grounded;
 	bool m_cielinged;
 	bool m_damaged;
@@ -37,6 +38,7 @@ public class PlayerMoveControl : MonoBehaviour {
 	float m_knockbackTimeRemaining = 0;
 	float m_invulnerabilityTimeRemaining = 0;
 	float m_dyingTimeRemaining = 0;
+	float m_swipeTimeRemaining = 0;
 	Animator m_animator;
 	Transform m_waveTransform;
 	WaveControl m_waveControl;
@@ -148,6 +150,7 @@ public class PlayerMoveControl : MonoBehaviour {
 				m_rb.velocity = new Vector3( m_walkSpeed * m_walkDirection, m_rb.velocity.y);
 
 				if(Input.GetMouseButtonDown(0)){
+					
 					//Add processing to react to down press
 						m_touchVector = Input.mousePosition;
 				}
